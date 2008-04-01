@@ -1,0 +1,17 @@
+export(isa.in.silico, generate.seeds, images, isa.biclust)
+
+exportMethods("isa",
+              "isa.normalize",
+              "isa.iterate",
+              "isa.unique",
+              "robustness",
+              "isa.filter.robust",
+              "isa.sweep",
+              "sweep.graph",
+              "plotModules")
+
+export(isa.option)
+
+##########
+
+useDynLib(isa2)
