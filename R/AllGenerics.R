@@ -19,3 +19,4 @@ setGeneric("sweep.graph",
 
 setGeneric("plotModules",
            function(modules, ...) standardGeneric("plotModules"))
+

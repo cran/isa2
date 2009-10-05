@@ -35,8 +35,9 @@ setMethod("isa.iterate", signature(normed.data="list"),
 isa.iterate.default <- function(normed.data, row.seeds, col.seeds,
                                 thr.row, thr.col=thr.row,
                                 direction=c("updown", "updown"),
-                                convergence=c("cor", "eps"),
+                                convergence=c("corx", "cor", "eps"),
                                 cor.limit=0.99, eps=1e-4,
+                                corx=3,
                                 oscillation=FALSE, maxiter=100) {
 
   isa.status("Doing ISA iteration", "in")
@@ -98,7 +99,7 @@ isa.iterate.default <- function(normed.data, row.seeds, col.seeds,
   }
   if (!missing(col.seeds)) {
     col.seeds <- isa.row.from.col(normed.data, col.seeds=col.seeds,
-                                  thr.row=tail(thr.row, ncol(row.seeds)),
+                                  thr.row=tail(thr.row, ncol(col.seeds)),
                                   direction=direction[2])
     all.seeds <- cbind(all.seeds, col.seeds)
   }
@@ -107,7 +108,7 @@ isa.iterate.default <- function(normed.data, row.seeds, col.seeds,
   rundata <- list(direction=direction, eps=eps, cor.limit=cor.limit,
                   maxiter=maxiter, N=no.seeds, convergence=convergence,
                   prenormalize=attr(normed.data, "prenormalize"),
-                  hasNA=attr(normed.data, "hasNA"),
+                  hasNA=attr(normed.data, "hasNA"), corx=corx,
                   unique=FALSE, oscillation=oscillation)
 
   ## All the seed data, this will be updated, of course
@@ -135,6 +136,25 @@ isa.iterate.default <- function(normed.data, row.seeds, col.seeds,
       c.n <- scale(col.new)
       res <- (colSums(g.o * g.n) / (nrow(g.o)-1) > cor.limit &
               colSums(c.o * c.n) / (nrow(c.o)-1) > cor.limit)
+      res & !is.na(res)
+    }
+  } else if (convergence=="corx") {
+    if (corx < 2) { stop("Invalid `corx' value, shoudl be at least 2") }
+    rows.old <- cols.old <- list()
+    idx.old <- seq_len(corx)
+    check.convergence <- function(row.old, row.new, col.old, col.new) {
+      if (iter < corx+1) {
+        rows.old <<- c(rows.old, list(row.new))
+        cols.old <<- c(cols.old, list(col.new))
+        return(rep(FALSE, ncol(row.old)))
+      }
+      row.new <- scale(row.new)
+      col.new <- scale(col.new)
+      res <- (colSums(rows.old[[idx.old[1]]]*row.new)/(nrow(row.new)-1) > cor.limit &
+              colSums(cols.old[[idx.old[1]]]*col.new)/(nrow(col.new)-1) > cor.limit)
+      rows.old[[ idx.old[1] ]] <<- row.new
+      cols.old[[ idx.old[1] ]] <<- col.new
+      idx.old <<- c(idx.old[-1], idx.old[1])
       res & !is.na(res)
     }
   }
@@ -197,6 +217,10 @@ isa.iterate.default <- function(normed.data, row.seeds, col.seeds,
       if (oscillation) { fire <- fire[-drop] }
       thr.row <- thr.row[-drop]
       thr.col <- thr.col[-drop]
+      if (convergence=="corx") {
+        rows.old <- lapply(rows.old, function(x) x[,-drop,drop=FALSE])
+        cols.old <- lapply(cols.old, function(x) x[,-drop,drop=FALSE])
+      }
       index <- index[-drop]
     }
     
@@ -206,7 +230,7 @@ isa.iterate.default <- function(normed.data, row.seeds, col.seeds,
     col.old <- col.new
     
   } ## End of main loop
-
+  
   isa.status("DONE", "out")
   
   list(rows=row.res, columns=col.res,
@@ -426,6 +450,7 @@ isa.sweep.default <- function(data, normed.data, isaresult, method=c("cor"),
                           convergence=isaresult$rundata$convergence,
                           eps=isaresult$rundata$eps,
                           cor.limit=isaresult$rundata$cor.limit,
+                          corx=isaresult$rundata$corx,
                           maxiter=isaresult$rundata$maxiter,
                           oscillation=isaresult$rundata$oscillation)
 
@@ -520,7 +545,52 @@ sweep.graph.default <- function(sweep.result) {
   from <- from[valid]
   to <- to[valid]
 
-  graph( rbind(from, to)-1, n=nnodes )
+  G <- graph( rbind(from, to)-1, n=nnodes )
+
+  if (length(unique(sweep.result$seeddata$thr.row)) == 1) {
+    V(G)$thr <- sweep.result$seeddata$thr.col
+  } else {
+    V(G)$thr <- sweep.result$seeddata$thr.row
+  }
+
+  V(G)$id <- seq(vcount(G))
+  graphs <- decompose.graph(G)
+
+  layouts <- lapply(graphs, function(g) {
+    l <- layout.reingold.tilford(g, root=tail(topological.sort(g, mode="out"), 1))
+    r <- sqrt(l[,1]^2 + l[,2]^2)
+    phi <- atan2(l[,2], l[,1]) - pi/2
+    l[,1] <- r * cos(phi)
+    l[,2] <- r * sin(phi)
+    labels <- sort(unlist(V(g)$thr))
+    l <- layout.norm(l, labels[1]-2, labels[length(labels)]-2, NULL, NULL)
+    l[,2] <- l[,2] - min(l[,2])
+    l})
+
+  offs <- 0
+  for (i in 1:length(layouts)) {
+    layouts[[i]][,2] <- layouts[[i]][,2] + offs
+    r <- range(layouts[[i]][,2])
+    r[2] <- r[2] + 1
+    offs <- offs + r[2] - r[1]
+  }
+  offs <- offs-0.5
+  
+  G$layout <- do.call(rbind, layouts)
+  G$layout[unlist(sapply(graphs, get.vertex.attribute, "id")),] <- G$layout
+  G$width <- length(unique(G$layout[,1])) * 2
+  G$height <- (max(G$layout[,2])-min(G$layout[,2])) * 0.4
+
+  V(G)$color <- "lightgray"
+  V(G)$shape <- "vrectangle"
+  V(G)$size  <- 16
+  V(G)$size2 <- offs * 1.5
+  V(G)$label <- V(G)$id
+  E(G)$arrow.size <- 0.5
+  V(G)$rows <- colSums(sweep.result$rows != 0)
+  V(G)$cols <- colSums(sweep.result$columns != 0)  
+  
+  G
 }
 
 setMethod("isa", signature(data="matrix"),
