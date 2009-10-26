@@ -24,6 +24,7 @@
 <<Roptions,echo=FALSE,results=hide>>=
 options(width=60)
 options(continue=" ")
+try(X11.options(type="xlib"), silent=TRUE)
 @ 
 
 \section{Running ISA in parallel}
@@ -113,7 +114,7 @@ Bergmann, S., Ihmels, J., and Barkai, N. (2003).
 \bibitem[Cs\'ardi, 2009]{isapackage}
 Cs\'ardi, G. (Apr 1, 2009).
 \newblock {\em isa2: The Iterative Signature Algorithm}.
-\newblock R package version 0.1.1.
+\newblock R package version 0.1.
 
 \bibitem[Ihmels, 2002]{sa}
 Ihmels, J., Friedlander, G., Bergmann, S., Sarig, O., Ziv, Y., 
