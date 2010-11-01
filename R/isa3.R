@@ -330,7 +330,9 @@ isa.unique.default <- function(normed.data, isaresult, method=c("cor"),
     cm <- pmin(ABS(cor(isaresult$rows)), ABS(cor(isaresult$columns)))
     cm[ lower.tri(cm, diag=TRUE) ] <- 0
     uni <- apply(cm < cor.limit, 2, all)
-    freq <- apply(cm >= cor.limit, 1, sum)[uni] + 1
+    freq <- sapply(seq_len(nrow(cm)), function(x) {
+      sum(isaresult$seeddata$freq[cm[x,] >= cor.limit])
+    }) + isaresult$seeddata$freq
   } else if (method=="round") {
     ## TODO
     stop("The `round' method is currently not implemented")
@@ -340,7 +342,7 @@ isa.unique.default <- function(normed.data, isaresult, method=c("cor"),
   isaresult$columns <- isaresult$columns[,uni,drop=FALSE]
 
   isaresult$seeddata <- isaresult$seeddata[uni,,drop=FALSE]
-  isaresult$seeddata$freq <- freq
+  isaresult$seeddata$freq <- freq[uni]
 
   isaresult$rundata$unique <- TRUE
 
@@ -596,8 +598,9 @@ sweep.graph.default <- function(sweep.result) {
 setMethod("isa", signature(data="matrix"),
           function(data, ...) isa.default(data, ...))
 
-isa.default <- function(data, thr.row=seq(1,3,by=0.5), thr.col=seq(1,3,by=0.5),
-                        no.seeds=100) {
+isa.default <- function(data, thr.row=seq(1,3,by=0.5),
+                        thr.col=seq(1,3,by=0.5),
+                        no.seeds=100, direction=c("updown", "updown")) {
 
   isa.status("Performing complete ISA work flow", "in")
   
@@ -616,11 +619,13 @@ isa.default <- function(data, thr.row=seq(1,3,by=0.5), thr.col=seq(1,3,by=0.5),
   thr.list <- unlist(apply(thr.list, 1, list), rec=FALSE)
   
   ## Do the ISA, for all thresholds
-  isaresults <- lapply(thr.list, function(x) isa.iterate(normed.data,
-                                                         row.seeds=row.seeds,
-                                                         thr.row=x["thr.row"],
-                                                         thr.col=x["thr.col"]))
-
+  isaresults <- lapply(thr.list, function(x)
+                       isa.iterate(normed.data,
+                                   row.seeds=row.seeds,
+                                   thr.row=x["thr.row"],
+                                   thr.col=x["thr.col"],
+                                   direction=direction))
+  
   ## Make it unique for every threshold combination
   isaresults <- lapply(isaresults, function(x)
                        isa.unique(normed.data, x))
