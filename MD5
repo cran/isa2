@@ -1,9 +1,9 @@
-4902278e870b60243a911c7e51a4c2c7 *DESCRIPTION
+ff37107931d537ac504b607d6bdb09ef *DESCRIPTION
 275c0b6ee2e1a151df9b9a6bcc9d55a0 *NAMESPACE
 63b9b4722d144be9c300af8fb01b251d *R/AllGenerics.R
 8da427f72383ad624646ccd0b19178fc *R/biclust.R
 d8f0043a3deee5e336501ca8a7e3b75a *R/insilico.R
-c52cfa6b175d009a247721760a3d5055 *R/isa3.R
+c709e63ed8d83f7511374ebc57dbf887 *R/isa3.R
 dcdd2ef3e66eb41c27030caf3efa9974 *R/option.R
 c389ce060a71095852e4d7e3b205b96a *R/ppa.R
 8cec3c0d3fc28211f045e5d1d50ab03d *R/robustness.R
@@ -11,9 +11,9 @@ dee212092f30ff61647b1aad14267317 *R/status.R
 a0f18c578884a7f025de6f35ac32b977 *R/viz.R
 c370c6fa5e92e64966596fae4bf183b8 *R/zzz.R
 61f0443f536fa921018a76ee478e207e *inst/CITATION
-3a3c1955cc86250b5d08b527683321e2 *inst/doc/ISA_parallel.pdf
+1c72864fa608552cff782a559d47de04 *inst/doc/ISA_parallel.pdf
 cac011d7977edb9724605e5426f6c480 *inst/doc/ISA_parallel.vignette
-d011a8e88ec1d064926c5dde6e40dffd *inst/doc/ISA_tutorial.pdf
+491204e6265ec39907a899e0cba2017c *inst/doc/ISA_tutorial.pdf
 f3899087ccdade6dcc2fa0d77e6308ef *inst/doc/ISA_tutorial.vignette
 d9d21cc47a8e94311d6c1f8d2acaaacb *inst/doc/index.html
 3423d7a6760f3fadbf2340272fdd9f72 *man/aaa-package.Rd
@@ -24,7 +24,7 @@ c5f77479a634704b50c14a4fe8d7ddd4 *man/isa.biclust.Rd
 afba9e3867a1813f92be93b6c95aa3da *man/isa.iterate.Rd
 6d83a0b9523b0fff2def451095bab101 *man/isa.normalize.Rd
 ef0cc7a51032b9bcf61d70cd2ffafd00 *man/isa.option.Rd
-9ae0ffd5b6ae96a2c8b382fb57bcaeb0 *man/isa.sweep.Rd
+2b0181be24d74c01b7c159fb66e4d44c *man/isa.sweep.Rd
 e3188ec7cc1084321c8b0da3ea11b056 *man/isa.unique.Rd
 a2df14c3f7671b9a9ed3b77656f66ea5 *man/plot.modules.Rd
 b9bac57e5537043094fc17f7e3446cb6 *man/ppa.Rd
