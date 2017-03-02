@@ -20,7 +20,12 @@ export(isa.option)
 
 ##########
 
-useDynLib(isa2)
+useDynLib(isa2, .registration = TRUE, .fixes = "C_")
 
 importFrom(lattice, levelplot)
 importFrom(methods, .TraceWithMethods)
+
+importFrom(grDevices, colorRampPalette)
+importFrom(methods, new)
+importFrom(stats, cor, rnorm)
+importFrom(utils, tail)
