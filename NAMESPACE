@@ -23,7 +23,6 @@ export(isa.option)
 useDynLib(isa2, .registration = TRUE, .fixes = "C_")
 
 importFrom(lattice, levelplot)
-importFrom(methods, .TraceWithMethods)
 
 importFrom(grDevices, colorRampPalette)
 importFrom(methods, new)
